@@ -10,8 +10,13 @@
 import json
 import re
 from typing import List, Tuple, Dict
-import torch
-from torch.utils.data import Dataset
+
+try:
+    import torch
+    from torch.utils.data import Dataset
+except ImportError:
+    Dataset = object
+    torch = None
 
 LABELS_MAP = {
     0: "TECH_INCIDENT",
@@ -126,7 +131,9 @@ class TicketDataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        return (
-            torch.tensor(self.encoded[idx], dtype=torch.long),
-            torch.tensor(self.labels[idx], dtype=torch.long)
-        )
+        if torch is not None:
+            return (
+                torch.tensor(self.encoded[idx], dtype=torch.long),
+                torch.tensor(self.labels[idx], dtype=torch.long)
+            )
+        return self.encoded[idx], self.labels[idx]
